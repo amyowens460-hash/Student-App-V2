@@ -335,6 +335,10 @@
                 <span class="icon">📊</span>
                 <span class="text">របាយការណ៍</span>
             </button>
+            <button class="tab-btn" onclick="openTab(event, 'TabTelegram')">
+                <span class="icon">✈️</span>
+                <span class="text">Telegram Bot</span>
+            </button>
         </div>
 
         <div id="TabHome" class="tab-content" style="display: block;">
@@ -416,7 +420,12 @@
             </div>
             <div class="btn-group">
                 <button class="btn btn-save" onclick="saveData()">💾 រក្សាទុកទិន្នន័យអវត្តមាន</button>
+                <button class="btn" style="background-color: #0088cc; color: white;" onclick="sendTelegramNotificationManual()">✈️ ផ្ញើ Telegram ឥឡូវនេះ</button>
                 <button class="btn btn-print btn-print-report" style="display:inline-flex;" onclick="printDailyReport()">🖨️ បោះពុម្ពបញ្ជីវត្តមាន</button>
+            </div>
+            <div style="margin-top: 10px; font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+                <span id="tgAttendanceBadge" style="background-color: rgba(0, 136, 204, 0.15); color: #0088cc; padding: 4px 10px; border-radius: 12px; font-weight: bold; border: 1px solid #0088cc;">✈️ Telegram Auto-Send: OFF</span>
+                <span>(អាចកំណត់ ឬបើក/បិទ Auto ក្នុងផ្ទាំង Telegram Bot)</span>
             </div>
         </div>
 
@@ -435,6 +444,8 @@
                 </div>
                 <div class="input-group"><label>ថ្ងៃខែឆ្នាំកំណើត</label><input type="date" id="newStuDob"></div>
                 <div class="input-group"><label>ថ្នាក់ទី</label><input type="text" id="newStuGrade" placeholder="ឧ. ១០ ក"></div>
+                <div class="input-group"><label>ទូរស័ព្ទអាណាព្យាបាល</label><input type="text" id="newStuParentPhone" placeholder="ឧ. 012 345 678"></div>
+                <div class="input-group"><label>Telegram Chat ID អាណាព្យាបាល</label><input type="text" id="newStuParentChatId" placeholder="ឧ. 123456789 (បើមាន)"></div>
                 <button id="btnAddUpdate" class="btn btn-add" onclick="addOrUpdateStudent()">បញ្ជូនទិន្នន័យ</button>
                 
                 <div style="flex: 0 0 100%; border-top: 1px dashed var(--border-color); margin-top: 10px; padding-top: 15px;">
@@ -464,7 +475,7 @@
 
             <div class="table-wrapper">
                 <table id="manageTable">
-                    <thead><tr><th>ល.រ</th><th>អត្តលេខ</th><th style="text-align: left;">ឈ្មោះសិស្ស</th><th>ភេទ</th><th>ថ្ងៃ/ខែ/ឆ្នាំ កំណើត</th><th>ថ្នាក់ទី</th><th>សកម្មភាព</th></tr></thead>
+                    <thead><tr><th>ល.រ</th><th>អត្តលេខ</th><th style="text-align: left;">ឈ្មោះសិស្ស</th><th>ភេទ</th><th>ថ្ងៃ/ខែ/ឆ្នាំ កំណើត</th><th>ថ្នាក់ទី</th><th>ទូរស័ព្ទអាណាព្យាបាល</th><th>សកម្មភាព</th></tr></thead>
                     <tbody id="manageStudentTableBody"></tbody>
                 </table>
             </div>
@@ -537,6 +548,54 @@
             </div>
         </div>
 
+        <div id="TabTelegram" class="tab-content">
+            <h3 style="margin-top:0; color:var(--highlight);">✈️ កំណត់ Telegram Bot ជូនដំណឹង</h3>
+            <p style="text-align: center; color: var(--text-muted); font-size: 15px; margin-bottom: 20px;">
+                កំណត់ព័ត៌មាន Telegram Bot ដើម្បីផ្ញើសារជូនដំណឹងអវត្តមានសិស្សដោយស្វ័យប្រវត្តិ ទៅកាន់ Telegram Group ថ្នាក់រៀន ឬអាណាព្យាបាល។
+            </p>
+
+            <div class="controls-container" style="flex-direction: column; align-items: stretch; gap: 15px;">
+                <div class="input-group">
+                    <label style="color: var(--highlight); font-size: 14px;">🤖 Telegram Bot Token (ទទួលបានពី @BotFather)៖</label>
+                    <input type="text" id="tgBotToken" placeholder="ឧ. 123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ...">
+                </div>
+                
+                <div class="input-group">
+                    <label style="color: var(--highlight); font-size: 14px;">💬 Chat ID / Group ID (ថ្នាក់រៀន ឬ អាណាព្យាបាល)៖</label>
+                    <input type="text" id="tgChatId" placeholder="ឧ. -1001234567890 ឬ @your_group_name">
+                    <small style="color: var(--text-muted); margin-top: 4px;">* សម្រាប់ Telegram Group ឬ Channel ត្រូវ Add Bot ជា Admin ផងដែរ។</small>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 10px; padding: 12px 10px; background-color: var(--input-bg); border-radius: 8px; border: 1px solid var(--border-color);">
+                    <input type="checkbox" id="tgAutoSend" style="width: 22px; height: 22px; cursor: pointer;" onchange="updateAutoSendBadgeUI()">
+                    <label for="tgAutoSend" style="font-weight: bold; cursor: pointer; color: #17c964; font-size: 14px;">
+                        ☑️ ផ្ញើដំណឹង Telegram ដោយស្វ័យប្រវត្តិ នៅពេលចុចរក្សាទុកទិន្នន័យអវត្តមាន
+                    </label>
+                </div>
+
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px;">
+                    <button class="btn btn-save" style="flex: 1; min-width: 200px;" onclick="saveTelegramConfig()">
+                        💾 រក្សាទុកការកំណត់ Telegram
+                    </button>
+                    <button class="btn" style="background-color: #0088cc; color: white; height: 44px; padding: 0 20px;" onclick="testTelegramBot()">
+                        🧪 សាកល្បងផ្ញើសារ (Test Bot)
+                    </button>
+                </div>
+            </div>
+
+            <div class="guide-card gc-blue" style="margin-top: 20px;">
+                <h4 style="color: #0088cc;">ℹ️ របៀបបង្កើត និងកំណត់ Telegram Bot ជាជំហានៗ៖</h4>
+                <ol style="margin-left: 20px; color: var(--text-muted); line-height: 1.8; font-size: 14px;">
+                    <li>ឆាតទៅកាន់ Telegram <strong>@BotFather</strong> ក្នុង Telegram រួចផ្ញើសារ <code style="color:var(--highlight);">/newbot</code></li>
+                    <li>វាយបញ្ចូលឈ្មោះ Bot និង Username សម្រាប់ Bot របស់អ្នក បន្ទាប់មកអ្នកនឹងទទួលបាន <strong>HTTP API Token</strong></li>
+                    <li>ចម្លង Token នោះមកបិទភ្ជាប់ (Paste) ក្នុងប្រអប់ <strong>Bot Token</strong> ខាងលើ</li>
+                    <li>បង្កើត Group Telegram សម្រាប់ថ្នាក់រៀន រួច Pull/Add អាណាព្យាបាល និង Bot ចូលក្នុង Group នោះ</li>
+                    <li>Promote / ដាក់ Bot ជា <strong>Admin</strong> ក្នុង Group នោះ</li>
+                    <li>ដើម្បីស្វែងរក Group Chat ID: ឆាតទៅ <strong>@myidbot</strong> ក្នុង Group នោះ ឬប្រើ Chat ID ដែលផ្ដើមដោយ <code style="color:var(--highlight);">-100...</code></li>
+                </ol>
+            </div>
+        </div>
+
         <div class="footer-credit">បង្កើតកម្មវិធីអោយ <strong>Rothivong</strong></div>
     </div>
 
@@ -571,7 +630,6 @@
 		  appId: "1:691400190673:web:57dc3a45e8b44c8292b3f0"
 		};
 
-
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
@@ -580,6 +638,7 @@
         let globalStudents = []; 
         let cloudHistoryData = [];
         let myScheduleData = {}; 
+        let telegramConfig = { botToken: "", chatId: "", autoSend: false };
 
         const khmerMonths = {"-01-":"មករា", "-02-":"កុម្ភៈ", "-03-":"មីនា", "-04-":"មេសា", "-05-":"ឧសភា", "-06-":"មិថុនា", "-07-":"កក្កដា", "-08-":"សីហា", "-09-":"កញ្ញា", "-10-":"តុលា", "-11-":"វិច្ឆិកា", "-12-":"ធ្នូ"};
         const timeSlotMapping = { "៧:០០ - ៨:០០ (ព្រឹក)": 1, "៨:០០ - ៩:០០ (ព្រឹក)": 2, "៧:០០ - ៩:០០ (ព្រឹក) ២ម៉ោង": 1, "៩:០០ - ១០:០០ (ព្រឹក)": 3, "១០:០០ - ១១:០០ (ព្រឹក)": 4, "៩:០០ - ១១:០០ (ព្រឹក) ២ម៉ោង": 3, "២:០០ - ៣:០០ (រសៀល)": 5, "៣:០០ - ៤:០០ (រសៀល)": 6, "២:០០ - ៤:០០ (រសៀល) ២ម៉ោង": 5 };
@@ -592,7 +651,7 @@
                 currentUserUid = user.uid; 
                 document.getElementById("authOverlay").style.display = "none";
                 document.getElementById("mainApp").style.display = "block";
-                loadStudentsFromCloud(); loadHistoryFromCloud(); loadScheduleFromCloud(); 
+                loadStudentsFromCloud(); loadHistoryFromCloud(); loadScheduleFromCloud(); loadTelegramConfig();
             } else {
                 currentUserUid = null;
                 document.getElementById("authOverlay").style.display = "flex";
@@ -631,172 +690,144 @@
         function autoDetectSubject() { let dateVal = document.getElementById('date').value; let timeVal = document.getElementById('timeSlot').value; let subjectInput = document.getElementById('currentSubject'); if (!dateVal || !timeVal) { subjectInput.value = ""; return; } let d = new Date(dateVal); let dayIndex = d.getDay(); if (dayIndex === 0) { subjectInput.value = "ថ្ងៃអាទិត្យ (ឈប់សម្រាក)"; return; } let timeIndex = timeSlotMapping[timeVal]; if (!timeIndex) { subjectInput.value = "ម៉ោងមិនត្រឹមត្រូវ"; return; } let key = `sch_${dayIndex}_${timeIndex}`; subjectInput.value = myScheduleData[key] || "មិនមានមុខវិជ្ជា"; }
 
         // ==========================================
-        // ៤. គ្រប់គ្រងសិស្ស
+        // ៣.១ មុខងារ Telegram Bot Notification
         // ==========================================
-        let editingStudentDocId = null; 
-        function formatDateToKhmer(dateStr) { if (!dateStr || dateStr === "មិនបានបញ្ជាក់") return dateStr; let parts = dateStr.split('-'); if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`; return dateStr; }
-        function parseDateFromKhmer(dateStr) { if (!dateStr || dateStr === "មិនបានបញ្ជាក់") return ""; let parts = dateStr.split('/'); if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`; return dateStr; }
-
-        function loadStudentsFromCloud() {
-            if(!currentUserUid) return;
-            getUserRef().collection("students").get().then((querySnapshot) => {
-                globalStudents = []; 
-                querySnapshot.forEach((doc) => {
-                    let data = doc.data(); data.docId = doc.id; globalStudents.push(data);
-                });
-                globalStudents.sort((a, b) => a.name.localeCompare(b.name, 'km'));
-                renderStudentTables(); 
-            }).catch((error) => { console.log("Error loading students: ", error); });
+        function loadTelegramConfig() {
+            if (!currentUserUid) return;
+            getUserRef().collection("settings").doc("telegramConfig").get().then((doc) => {
+                if (doc.exists) {
+                    telegramConfig = doc.data() || {};
+                    document.getElementById("tgBotToken").value = telegramConfig.botToken || "";
+                    document.getElementById("tgChatId").value = telegramConfig.chatId || "";
+                    document.getElementById("tgAutoSend").checked = !!telegramConfig.autoSend;
+                }
+                updateAutoSendBadgeUI();
+            }).catch(err => console.log("Telegram config load error: ", err));
         }
 
-        function renderStudentTables() {
-            let attBody = document.getElementById("attendanceStudentTableBody");
-            let mgmtBody = document.getElementById("manageStudentTableBody");
-            attBody.innerHTML = ""; mgmtBody.innerHTML = ""; 
-            
-            let total = globalStudents.length;
-            let femaleCount = globalStudents.filter(s => s.gender === 'ស្រី' || s.gender === 'ស').length;
-            let maleCount = total - femaleCount;
-            document.getElementById("studentStatsInfo").innerText = `សិស្សសរុប៖ ${total} នាក់ (ស្រី៖ ${femaleCount} នាក់ | ប្រុស៖ ${maleCount} នាក់)`;
+        function saveTelegramConfig() {
+            if (!currentUserUid) return;
+            let token = document.getElementById("tgBotToken").value.trim();
+            let chatId = document.getElementById("tgChatId").value.trim();
+            let autoSend = document.getElementById("tgAutoSend").checked;
 
-            if(total === 0) { 
-                attBody.innerHTML = `<tr><td colspan="5" style="color:var(--text-muted); padding:20px;">មិនទាន់មានសិស្សទេ សូមទៅកាន់ផ្ទាំងគ្រប់គ្រងសិស្ស!</td></tr>`; 
-                mgmtBody.innerHTML = `<tr><td colspan="7" style="color:var(--text-muted); padding:20px;">មិនទាន់មានសិស្សទេ សូមបញ្ចូលថ្មី ឬ Import!</td></tr>`; 
-                return; 
+            telegramConfig = { botToken: token, chatId: chatId, autoSend: autoSend };
+            getUserRef().collection("settings").doc("telegramConfig").set(telegramConfig).then(() => {
+                alert("ការកំណត់ Telegram ត្រូវបានរក្សាទុកជោគជ័យ!");
+                updateAutoSendBadgeUI();
+            }).catch(err => alert("បញ្ហា៖ " + err.message));
+        }
+
+        function updateAutoSendBadgeUI() {
+            let isAuto = document.getElementById("tgAutoSend").checked;
+            let badge = document.getElementById("tgAttendanceBadge");
+            if (badge) {
+                if (isAuto) {
+                    badge.style.backgroundColor = "rgba(23, 201, 100, 0.15)";
+                    badge.style.color = "#17c964";
+                    badge.style.borderColor = "#17c964";
+                    badge.innerText = "✈️ Telegram Auto-Send: ON";
+                } else {
+                    badge.style.backgroundColor = "rgba(0, 136, 204, 0.15)";
+                    badge.style.color = "#0088cc";
+                    badge.style.borderColor = "#0088cc";
+                    badge.innerText = "✈️ Telegram Auto-Send: OFF";
+                }
+            }
+        }
+
+        function sendTelegramMessage(text, customChatId) {
+            let token = telegramConfig.botToken || document.getElementById("tgBotToken").value.trim();
+            let chatId = customChatId || telegramConfig.chatId || document.getElementById("tgChatId").value.trim();
+
+            if (!token || !chatId) {
+                return Promise.reject(new Error("សូមបញ្ចូល Bot Token និង Chat ID ក្នុងផ្ទាំង Telegram Bot ជាមុនសិន!"));
             }
 
-            let index = 1;
-            globalStudents.forEach((data) => {
-                let displayGender = (data.gender === 'ប្រុស') ? 'ប' : ((data.gender === 'ស្រី') ? 'ស' : data.gender);
-
-                let attRow = `<tr><td>${index}</td><td class="stu-id">${data.id}</td><td class="stu-name" style="text-align: left; font-weight: bold;">${data.name}</td><td>${displayGender}</td><td><div class="status-btns"><button class="btn btn-present" onclick="markStatus(this, 'present')">វត្តមាន</button> <button class="btn btn-excused" onclick="markStatus(this, 'excused')">ច្បាប់</button> <button class="btn btn-unexcused" onclick="markStatus(this, 'unexcused')">អត់ច្បាប់</button></div></td></tr>`;
-                attBody.innerHTML += attRow;
-
-                let mgmtRow = `<tr><td>${index}</td><td class="stu-id">${data.id}</td><td class="stu-name" style="text-align: left; font-weight: bold;">${data.name}</td><td>${displayGender}</td><td>${data.dob}</td><td>${data.grade}</td><td><div class="action-btns"><button class="btn btn-edit" onclick="editStudent('${data.docId}')">កែប្រែ</button> <button class="btn btn-delete" onclick="deleteStudent('${data.docId}')">លុប</button></div></td></tr>`;
-                mgmtBody.innerHTML += mgmtRow;
-                index++;
+            let url = `https://api.telegram.org/bot${token}/sendMessage`;
+            return fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: text,
+                    parse_mode: 'HTML'
+                })
+            }).then(res => res.json()).then(data => {
+                if (!data.ok) {
+                    throw new Error(data.description || "Telegram API Error");
+                }
+                return data;
             });
         }
 
-        function deleteAllStudentsFromCloud() {
-            if(!currentUserUid) return;
-            if(globalStudents.length === 0) { alert("គ្មានទិន្នន័យសិស្សសម្រាប់លុបទេ!"); return; }
-            if(confirm("⚠️ តើអ្នកពិតជាចង់លុបឈ្មោះសិស្ស 'ទាំងអស់' ចេញពីប្រព័ន្ធមែនទេ?\nបញ្ជាក់៖ ទិន្នន័យដែលលុបរួចមិនអាចទាញយកវិញបានទេ!")) {
-                let batch = db.batch();
-                globalStudents.forEach(student => { let docRef = getUserRef().collection("students").doc(student.docId); batch.delete(docRef); });
-                batch.commit().then(() => { alert("ទិន្នន័យសិស្សទាំងអស់ត្រូវបានលុបដោយជោគជ័យ!"); loadStudentsFromCloud(); }).catch(error => { alert("មានបញ្ហាក្នុងការលុប: " + error.message); });
-            }
+        function testTelegramBot() {
+            let testText = "🧪 <b>សារតេស្តពីប្រព័ន្ធគ្រប់គ្រងអវត្តមានសិស្ស</b>\n\nTelegram Bot ត្រូវបានភ្ជាប់ និងដំណើរការដោយជោគជ័យ! 🎉";
+            sendTelegramMessage(testText).then(() => {
+                alert("🎉 ផ្ញើសារសាកល្បងបានជោគជ័យ! សូមពិនិត្យមើលក្នុង Telegram Chat/Group របស់អ្នក។");
+            }).catch(err => {
+                alert("❌ បរាជ័យក្នុងការផ្ញើសារ៖ " + err.message);
+            });
         }
 
-        function importFromExcel() {
-            if(!currentUserUid) return;
-            let fileInput = document.getElementById('excelFileInput'); let file = fileInput.files[0];
-            if (!file) { alert("សូមជ្រើសរើសឯកសារ Excel ជាមុនសិន!"); return; }
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                let data = new Uint8Array(e.target.result); let workbook = XLSX.read(data, {type: 'array'}); let worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                let json = XLSX.utils.sheet_to_json(worksheet, {header: 1, raw: false});
-                if (json.length <= 1) { alert("ឯកសារ Excel គ្មានទិន្នន័យទេ!"); return; }
-                
-                let newStudents = [];
-                for (let i = 1; i < json.length; i++) {
-                    let row = json[i]; if (!row || row.length === 0 || !row[1]) continue; 
-                    let id = row[0] ? String(row[0]).trim() : `S${Date.now() + i}`; 
-                    let name = String(row[1]).trim(); 
-                    
-                    let rawGender = row[2] ? String(row[2]).trim() : "មិនបានបញ្ជាក់"; 
-                    let gender = "មិនបានបញ្ជាក់";
-                    if (rawGender === "ប្រុស" || rawGender === "ប" || rawGender.toLowerCase() === "m" || rawGender.toLowerCase() === "b") { gender = "ប"; } 
-                    else if (rawGender === "ស្រី" || rawGender === "ស" || rawGender.toLowerCase() === "f" || rawGender.toLowerCase() === "s") { gender = "ស"; } 
-                    else { gender = rawGender; }
+        function generateAttendanceTelegramText(dateStr, timeSlot, subject, totalPresent, totalExcused, totalUnexcused, excusedNames, unexcusedNames) {
+            let formattedDate = formatDateToKhmer(dateStr);
+            let text = `🔔 <b>ដំណឹងអវត្តមានសិស្សប្រចាំថ្ងៃ</b>\n`;
+            text += `📅 <b>កាលបរិច្ឆេទ៖</b> ${formattedDate}\n`;
+            text += `⏰ <b>ម៉ោងសិក្សា៖</b> ${timeSlot}\n`;
+            text += `📚 <b>មុខវិជ្ជា៖</b> ${subject || 'មិនមានបញ្ជាក់'}\n\n`;
 
-                    let dob = row[3] ? String(row[3]).trim() : "មិនបានបញ្ជាក់"; let grade = row[4] ? String(row[4]).trim() : "មិនបានបញ្ជាក់";
-                    newStudents.push({ id: id, name: name, gender: gender, dob: dob, grade: grade, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-                }
-                if (newStudents.length === 0) { alert("រកមិនឃើញទិន្នន័យសិស្សត្រឹមត្រូវទេ!"); return; }
-                if(confirm(`រកឃើញសិស្សចំនួន ${newStudents.length} នាក់។ តើអ្នកពិតជាចង់បញ្ចូលមែនទេ?`)) {
-                    fileInput.disabled = true; let batch = db.batch(); 
-                    newStudents.forEach(student => { let docRef = getUserRef().collection("students").doc(); batch.set(docRef, student); });
-                    batch.commit().then(() => { alert("នាំចូលជោគជ័យ!"); fileInput.value = ""; fileInput.disabled = false; loadStudentsFromCloud(); }).catch(error => { alert("មានបញ្ហា: " + error.message); fileInput.disabled = false; });
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function addOrUpdateStudent() {
-            if(!currentUserUid) return;
-            let id = document.getElementById("newStuId").value.trim(); let name = document.getElementById("newStuName").value.trim(); let gender = document.getElementById("newStuGender").value; let dobRaw = document.getElementById("newStuDob").value; let grade = document.getElementById("newStuGrade").value.trim();
-            if(id === "" || name === "") { alert("សូមបញ្ចូលអត្តលេខ និងឈ្មោះសិស្ស!"); return; }
-            let dob = dobRaw ? formatDateToKhmer(dobRaw) : "មិនបានបញ្ជាក់"; if(grade === "") grade = "មិនបានបញ្ជាក់";
-            
-            let studentData = { id: id, name: name, gender: gender, dob: dob, grade: grade, timestamp: firebase.firestore.FieldValue.serverTimestamp() };
-            let btn = document.getElementById("btnAddUpdate"); btn.innerText = "កំពុងរក្សាទុក..."; btn.disabled = true;
-
-            if (editingStudentDocId) {
-                getUserRef().collection("students").doc(editingStudentDocId).update(studentData).then(() => { editingStudentDocId = null; btn.innerText = "បញ្ជូនទិន្នន័យ"; btn.classList.replace("btn-update", "btn-add"); btn.disabled = false; document.getElementById("newStuId").value = ""; document.getElementById("newStuName").value = ""; document.getElementById("newStuDob").value = ""; document.getElementById("newStuGrade").value = ""; loadStudentsFromCloud(); });
+            if (excusedNames && excusedNames.length > 0) {
+                text += `📄 <b>សិស្សសុំច្បាប់ (${excusedNames.length} នាក់)៖</b>\n`;
+                excusedNames.forEach((n, idx) => { text += `  ${idx + 1}. ${n}\n`; });
+                text += `\n`;
             } else {
-                getUserRef().collection("students").add(studentData).then(() => { btn.innerText = "បញ្ជូនទិន្នន័យ"; btn.disabled = false; document.getElementById("newStuId").value = ""; document.getElementById("newStuName").value = ""; document.getElementById("newStuDob").value = ""; document.getElementById("newStuGrade").value = ""; loadStudentsFromCloud(); });
+                text += `📄 <b>សិស្សសុំច្បាប់៖</b> គ្មាន\n\n`;
             }
-        }
-        
-        function editStudent(docId) { 
-            let student = globalStudents.find(s => s.docId === docId); 
-            if(student) { 
-                document.getElementById("newStuId").value = student.id; document.getElementById("newStuName").value = student.name; 
-                let g = student.gender; if(g === 'ប្រុស') g = 'ប'; if(g === 'ស្រី') g = 'ស'; document.getElementById("newStuGender").value = g; 
-                document.getElementById("newStuDob").value = parseDateFromKhmer(student.dob); document.getElementById("newStuGrade").value = (student.grade === "មិនបានបញ្ជាក់") ? "" : student.grade; 
-                editingStudentDocId = docId; let btn = document.getElementById("btnAddUpdate"); btn.innerText = "✓ រក្សាទុកការកែប្រែ"; btn.classList.replace("btn-add", "btn-update"); 
-                window.scrollTo({ top: 0, behavior: 'smooth' }); 
-            } 
-        }
-        function deleteStudent(docId) { if(confirm("តើអ្នកពិតជាចង់លុបសិស្សនេះចេញពីប្រព័ន្ធមែនទេ?")) { getUserRef().collection("students").doc(docId).delete().then(() => { loadStudentsFromCloud(); }); } }
-        function filterTable(inputId, tbodyId) { let input = document.getElementById(inputId).value.toLowerCase(); let rows = document.querySelectorAll(`#${tbodyId} tr`); rows.forEach(row => { let id = row.querySelector(".stu-id")?.innerText.toLowerCase() || ""; let name = row.querySelector(".stu-name")?.innerText.toLowerCase() || ""; if (id.includes(input) || name.includes(input)) row.style.display = ""; else row.style.display = "none"; }); }
-        
-        // ==========================================
-        // ៥. កត់វត្តមាន
-        // ==========================================
-        function markStatus(button, status) { 
-            let row = button.closest("tr"); 
-            let pBtn = row.querySelector('.btn-present'); let eBtn = row.querySelector('.btn-excused'); let aBtn = row.querySelector('.btn-unexcused'); 
-            pBtn.classList.remove('active-present'); eBtn.classList.remove('active-excused'); aBtn.classList.remove('active-unexcused'); 
-            if (status === 'present') pBtn.classList.add('active-present'); else if (status === 'excused') eBtn.classList.add('active-excused'); else if (status === 'unexcused') aBtn.classList.add('active-unexcused'); 
+
+            if (unexcusedNames && unexcusedNames.length > 0) {
+                text += `❌ <b>សិស្សអត់ច្បាប់ (${unexcusedNames.length} នាក់)៖</b>\n`;
+                unexcusedNames.forEach((n, idx) => { text += `  ${idx + 1}. ${n}\n`; });
+                text += `\n`;
+            } else {
+                text += `❌ <b>សិស្សអត់ច្បាប់៖</b> គ្មាន\n\n`;
+            }
+
+            text += `📊 <b>សរុបវត្តមាន៖</b> មក ${totalPresent} នាក់ | ច្បាប់ ${totalExcused} នាក់ | អត់ច្បាប់ ${totalUnexcused} នាក់`;
+            return text;
         }
 
-        function markAllStatus(status) { 
-            let rows = document.querySelectorAll('#attendanceStudentTableBody tr'); 
-            rows.forEach(row => { 
-                if (row.style.display !== 'none' && row.querySelector('.btn-present')) { 
-                    let pBtn = row.querySelector('.btn-present'); let eBtn = row.querySelector('.btn-excused'); let aBtn = row.querySelector('.btn-unexcused'); 
-                    pBtn.classList.remove('active-present'); eBtn.classList.remove('active-excused'); aBtn.classList.remove('active-unexcused'); 
-                    if (status === 'present') pBtn.classList.add('active-present'); else if (status === 'excused') eBtn.classList.add('active-excused'); else if (status === 'unexcused') aBtn.classList.add('active-unexcused'); 
-                } 
-            }); 
-        }
+        function sendTelegramNotificationManual() {
+            const rawDate = document.getElementById('date').value;
+            const timeSlot = document.getElementById('timeSlot').value;
+            const subject = document.getElementById('currentSubject').value;
+            if (!rawDate || !timeSlot) { alert("សូមជ្រើសរើសកាលបរិច្ឆេទ និងម៉ោងសិក្សាជាមុនសិន!"); return; }
 
-        function saveData() {
-            if(!currentUserUid) return;
-            const rawDate = document.getElementById('date').value; const timeSlot = document.getElementById('timeSlot').value; const subject = document.getElementById('currentSubject').value; 
-            if (!rawDate) { alert("សូមជ្រើសរើសកាលបរិច្ឆេទជាមុនសិន!"); return; } if (!timeSlot) { alert("សូមជ្រើសរើសម៉ោងសិក្សាជាមុនសិន!"); return; }
-            
-            const rows = document.querySelectorAll('#attendanceStudentTableBody tr'); 
-            let totalPresent = 0; let totalExcused = 0; let totalUnexcused = 0; let excusedNames = []; let unexcusedNames = [];
-            
-            rows.forEach(row => { 
-                let nameElement = row.querySelector('.stu-name'); 
-                if (nameElement) { 
-                    let name = nameElement.innerText; let isPresent = row.querySelector('.active-present'); let isExcused = row.querySelector('.active-excused'); let isUnexcused = row.querySelector('.active-unexcused'); 
-                    if (isPresent) { totalPresent++; } else if (isExcused) { totalExcused++; excusedNames.push(name); } else if (isUnexcused) { totalUnexcused++; unexcusedNames.push(name); }
-                } 
+            const rows = document.querySelectorAll('#attendanceStudentTableBody tr');
+            let totalPresent = 0; let totalExcused = 0; let totalUnexcused = 0;
+            let excusedNames = []; let unexcusedNames = [];
+            rows.forEach(row => {
+                let nameElement = row.querySelector('.stu-name');
+                if (nameElement) {
+                    let name = nameElement.innerText;
+                    if (row.querySelector('.active-present')) totalPresent++;
+                    else if (row.querySelector('.active-excused')) { totalExcused++; excusedNames.push(name); }
+                    else if (row.querySelector('.active-unexcused')) { totalUnexcused++; unexcusedNames.push(name); }
+                }
             });
 
-            if (totalPresent + totalExcused + totalUnexcused === 0) { alert("សូមគូសវត្តមានសិស្សយ៉ាងហោចណាស់ម្នាក់!"); return; }
-            
-            document.querySelector('.btn-save').innerText = "កំពុងរក្សាទុកទៅ Cloud...";
-            
-            getUserRef().collection("attendanceHistory").add({ 
-                date: rawDate, time: timeSlot, subject: subject, totalPresent: totalPresent, totalExcused: totalExcused, totalUnexcused: totalUnexcused, excusedNames: excusedNames, unexcusedNames: unexcusedNames, timestamp: firebase.firestore.FieldValue.serverTimestamp() 
-            }).then(() => { alert("រក្សាទុកជោគជ័យ!"); resetFormButtons(rows); loadHistoryFromCloud(); }).catch((error) => { alert("បញ្ហា: " + error.message); resetFormButtons(rows); });
+            if (totalPresent + totalExcused + totalUnexcused === 0) { alert("សូមគូសវត្តមានសិស្សជាមុនសិន!"); return; }
+            let msg = generateAttendanceTelegramText(rawDate, timeSlot, subject, totalPresent, totalExcused, totalUnexcused, excusedNames, unexcusedNames);
+            sendTelegramMessage(msg).then(() => {
+                alert("✈️ ផ្ញើសារ Telegram ជូនដំណឹងបានជោគជ័យ!");
+            }).catch(err => {
+                alert("❌ មិនអាចផ្ញើសារ Telegram បានទេ៖ " + err.message);
+            });
         }
+
+        // ==========================================
+        // ៦. ប្រវត្តិ និង របាយការណ៍ 
+        // ==========================================
 
         function resetFormButtons(rows) { rows.forEach(row => { let pBtn = row.querySelector('.btn-present'); let eBtn = row.querySelector('.btn-excused'); let aBtn = row.querySelector('.btn-unexcused'); if(pBtn) pBtn.classList.remove('active-present'); if(eBtn) eBtn.classList.remove('active-excused'); if(aBtn) aBtn.classList.remove('active-unexcused'); }); document.querySelector('.btn-save').innerText = "💾 រក្សាទុកទិន្នន័យអវត្តមាន"; }
 
